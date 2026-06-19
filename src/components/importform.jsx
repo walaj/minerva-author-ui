@@ -8,6 +8,16 @@ import { faExclamationCircle, faCheckCircle, faAngleLeft, faFileAlt} from "@fort
 import Loader from "../components/loader";
 import ErrorFooter from "../components/errorfooter";
 
+const toFolder = (p) => {
+  // Parent folder of a path, handling both POSIX and Windows separators
+  if (!p) {
+    return '';
+  }
+  const norm = p.replace(/[\\/]+$/, '');
+  const idx = Math.max(norm.lastIndexOf('/'), norm.lastIndexOf('\\'));
+  return idx >= 0 ? norm.slice(0, idx) : '';
+}
+
 const formatDefaultName = (outputDisabled) => {
   if (outputDisabled) {
     return '';
@@ -47,6 +57,7 @@ class ImportForm extends Component {
       currentMarkerFolder: null,
       outputDisabled: false,
       output: '',
+      inputPath: '',
       loadedChannelNames: null,
       markerFilename: null
     }
@@ -171,15 +182,17 @@ class ImportForm extends Component {
       newState.output = '';
     }
     if (this.state.missingImage && isJSON) {
-      // Allow new JSON path if manually edited 
+      // Allow new JSON path if manually edited
       this.missingPath.current.value = '';
       newState.missingImage = null;
+      newState.inputPath = file_path;
     }
     else if (this.state.missingImage) {
       this.missingPath.current.value = file_path;
     }
     else {
       this.filePath.current.value = file_path;
+      newState.inputPath = file_path;
     }
     this.setState(newState)
   }
@@ -325,6 +338,16 @@ class ImportForm extends Component {
             value={this.state.output} onChange={this.outputChanged}
           />
           </div>
+          { toFolder(this.state.inputPath) &&
+            <div className="field">
+              <small>
+                <FontAwesomeIcon icon={faFileAlt} />{' '}
+                Your story will be saved in the same folder as your input:
+                <br/>
+                <strong>{toFolder(this.state.inputPath)}</strong>
+              </small>
+            </div>
+          }
           <button className="ui button"> Import </button>
           <Loader active={this.state.loading} />
         </form>
